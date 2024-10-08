@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Gestión de Usuarios</title>
+    <link rel="icon" href="logo_PGUS-removebg.png" type="image/x-icon"/>
+    <!-- Link bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <img src="logo_PGUS-removebg.png" width="30" height="30" class="d-inline-block align-top" alt="">
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="servicios.html">Servicios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="recursos.html">Recursos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="contacto.html">Contacto</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="planes.html">Planes</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="usuarios.html">Gestión de Usuarios<span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Tabla de usuarios -->
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Gestión de Usuarios</h2>
+        <table id="userTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <img src="logo_PGUS-removebg.png" alt="Logo" class="mb-2">
+            <p>&copy; 2024 PGUS. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Enlaces JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        async function fetchUsers() {
+            const response = await fetch('/api/users');
+            const users = await response.json();
+            const tableBody = document.querySelector('#userTable tbody');
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editUser('${user._id}')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser('${user._id}')">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function editUser(id) {
+            const newName = prompt('Nuevo nombre:');
+            const newEmail = prompt('Nuevo correo:');
+            const newRole = prompt('Nuevo rol (admin/viewer):');
+
+            await fetch(`/api/users/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName, email: newEmail, role: newRole })
+            });
+
+            fetchUsers(); // Actualiza la lista después de editar
+        }
+
+        async function deleteUser(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+                await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                fetchUsers(); // Actualiza la lista después de eliminar
+            }
+        }
+
+        // Cargar usuarios al inicio
+        fetchUsers();
+    </script>
+</body>
+</html>
